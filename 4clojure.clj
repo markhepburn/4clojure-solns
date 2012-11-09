@@ -873,3 +873,34 @@
              (fn [b]
                (* a b))))
        5 5)))
+
+;;; http://www.4clojure.com/problem/112
+(def seq-horriblus
+  (fn [max s]
+    (letfn
+        [(rec [node sum]
+           (if (number? node)
+             (let [tot (+ node sum)]
+               [(if-not (> tot max) node) tot])
+             (let [[hd & rst] node
+                   [nd sm] (rec hd sum)
+                   [tl smm] (if (or (nil? rst) (> sm max))
+                              [nil sm]
+                              (rec rst sm))]
+               [(if (nil? nd) [] (cons nd tl)) smm])))]
+      (first (rec s 0)))))
+(comment
+(=  (seq-horriblus 10 [1 2 [3 [4 5] 6] 7])
+   '(1 2 (3 (4))))
+(=  (seq-horriblus 30 [1 2 [3 [4 [5 [6 [7 8]] 9]] 10] 11])
+   '(1 2 (3 (4 (5 (6 (7)))))))
+(=  (seq-horriblus 9 (range))
+   '(0 1 2 3))
+(=  (seq-horriblus 1 [[[[[1]]]]])
+   '(((((1))))))
+(=  (seq-horriblus 0 [1 2 [3 [4 5] 6] 7])
+   '())
+(=  (seq-horriblus 0 [0 0 [0 [0]]])
+   '(0 0 (0 (0))))
+(=  (seq-horriblus 1 [-10 [1 [2 3 [4 5 [6 7 [8]]]]]])
+   '(-10 (1 (2 3 (4))))))
