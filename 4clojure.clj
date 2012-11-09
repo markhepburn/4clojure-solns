@@ -875,6 +875,7 @@
        5 5)))
 
 ;;; http://www.4clojure.com/problem/112
+;;; Rather better approach: decrement max, don't maintain a concurrent running total!  Idiot.
 (def seq-horriblus
   (fn [max s]
     (letfn
@@ -904,3 +905,44 @@
    '(0 0 (0 (0))))
 (=  (seq-horriblus 1 [-10 [1 [2 3 [4 5 [6 7 [8]]]]]])
    '(-10 (1 (2 3 (4))))))
+
+;;; http://www.4clojure.com/problem/131
+(def equal-sum-subsets?
+  (fn [& sets]
+    (let [powersets (fn [s]
+                      (letfn [(combine [acc x]
+                                (conj (into acc (map #(conj % x) acc)) #{x}))]
+                        (conj (reduce combine #{} s) #{})))
+          psets (map powersets sets)    ; powersets for each set
+          psums (map (fn [p]
+                       (map (partial reduce +) (filter not-empty p)))
+                     psets)             ; set of sums, for each powerset
+          counts (reduce (fn [mp pst]   ; count of unique sums, across powersets
+                           (reduce (fn [m sm] (update-in m [sm] (fnil inc 0)))
+                                   mp (set pst)))
+                         {} psums)]
+      ;; True if each powerset had at least one common sum:
+      (contains? (set (vals counts)) (count sets)))))
+(comment
+(= true  (equal-sum-subsets? #{-1 1 99}
+             #{-2 2 888}
+             #{-3 3 7777})) ; ex. all sets have a subset which sums to zero
+
+(= false (equal-sum-subsets? #{1}
+             #{2}
+             #{3}
+             #{4}))
+
+(= true  (equal-sum-subsets? #{1}))
+
+(= false (equal-sum-subsets? #{1 -3 51 9}
+             #{0}
+             #{9 2 81 33}))
+
+(= true  (equal-sum-subsets? #{1 3 5}
+             #{9 11 4}
+             #{-3 12 3}
+             #{-3 4 -2 10}))
+
+(= false (equal-sum-subsets? #{-1 -2 -3 -4 -5 -6}
+             #{1 2 3 4 5 6 7 8 9})))
