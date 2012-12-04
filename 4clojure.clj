@@ -946,3 +946,28 @@
 
 (= false (equal-sum-subsets? #{-1 -2 -3 -4 -5 -6}
              #{1 2 3 4 5 6 7 8 9})))
+
+;;; http://www.4clojure.com/problem/141
+(def trick-cards
+  (fn [trick-suit]
+    (let [suits [:club :diamond :heart :spade]
+          suits (if-not (nil? trick-suit)
+                  (conj (vec (remove #(= trick-suit %) suits)) trick-suit)
+                  suits)]
+     (fn [cards]
+       (last
+        (sort-by (juxt (comp #(.indexOf suits %) :suit) :rank)
+                 cards))))))
+(comment
+(let [notrump (trick-cards nil)]
+  (and (= {:suit :club :rank 9}  (notrump [{:suit :club :rank 4}
+                                           {:suit :club :rank 9}]))
+       (= {:suit :spade :rank 2} (notrump [{:suit :spade :rank 2}
+                                           {:suit :club :rank 10}]))))
+
+(= {:suit :club :rank 10} ((trick-cards :club) [{:suit :spade :rank 2}
+                                                {:suit :club :rank 10}]))
+
+(= {:suit :heart :rank 8}
+   ((trick-cards :heart) [{:suit :heart :rank 6}    {:suit :heart :rank 8}
+                          {:suit :diamond :rank 10} {:suit :heart :rank 4}])))
