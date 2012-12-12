@@ -971,3 +971,49 @@
 (= {:suit :heart :rank 8}
    ((trick-cards :heart) [{:suit :heart :rank 6}    {:suit :heart :rank 8}
                           {:suit :diamond :rank 10} {:suit :heart :rank 4}])))
+
+;;; http://www.4clojure.com/problem/150
+(def palin-num
+  (fn [n]
+    (letfn
+        [(nextp [n]
+           (let [len  (count (str (int n)))
+                 mid  (int (Math/floor (/ len 2)))
+                 splt (int (quot n (Math/pow 10 mid)))
+                 n2d  (fn [n] (map #(- (int %) (int \0)) (str n)))
+                 d2n  (fn [d] (reduce #(+ (* %1 10) %2) d))
+                 m2n  (fn [d] (d2n (concat d (if (= len (* 2 mid)) (reverse d) (rest (reverse d))))))
+                 rnd  (let [i (Math/pow 10 mid)] (* i (inc (int (/ n i)))))
+                 np   (m2n (n2d splt))]
+             (cond
+              (and (>= n np) (= 9 (last (n2d splt)))) (nextp rnd)
+              (<= np n) (m2n (n2d (inc splt)))
+              :else np)))]
+      (iterate nextp (if (= (str n) (clojure.string/reverse (str n))) n (nextp n))))))
+(comment
+(= (take 26 (palin-num 0))
+   [0 1 2 3 4 5 6 7 8 9
+    11 22 33 44 55 66 77 88 99
+    101 111 121 131 141 151 161])
+
+(= (take 16 (palin-num 162))
+   [171 181 191 202
+    212 222 232 242
+    252 262 272 282
+    292 303 313 323])
+
+(= (take 6 (palin-num 1234550000))
+   [1234554321 1234664321 1234774321
+    1234884321 1234994321 1235005321])
+
+(= (first (palin-num (* 111111111 111111111)))
+   (* 111111111 111111111))
+
+(= (set (take 199 (palin-num 0)))
+   (set (map #(first (palin-num %)) (range 0 10000))))
+
+(= true
+   (apply < (take 6666 (palin-num 9999999))))
+
+(= (nth (palin-num 0) 10101)
+   9102019))
