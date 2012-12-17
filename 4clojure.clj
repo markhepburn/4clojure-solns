@@ -1017,3 +1017,21 @@
 
 (= (nth (palin-num 0) 10101)
    9102019))
+
+
+;;; http://www.4clojure.com/problem/171
+(def intervals
+  (fn [nums]
+    (loop [res []
+           l nil h nil
+           [x & rst :as srtd] (sort (set nums))]
+      (cond
+       (empty? srtd) (if (nil? l) res (conj res [l h]))
+       (nil? l)      (recur res x x rst)
+       (= 1 (- x h)) (recur res l x rst)
+       :else         (recur (conj res [l h]) x x rst)))))
+;; (= (intervals [1 2 3]) [[1 3]])
+;; (= (intervals [10 9 8 1 2 3]) [[1 3] [8 10]])
+;; (= (intervals [1 1 1 1 1 1 1]) [[1 1]])
+;; (= (intervals []) [])
+;; (= (intervals [19 4 17 1 3 10 2 13 13 2 16 4 2 15 13 9 6 14 2 11]) [[1 4] [6 6] [9 11] [13 17] [19 19]])
